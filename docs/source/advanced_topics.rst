@@ -293,6 +293,38 @@ Access fontconfig configuration directories and files::
    print(f"System fonts: {len(system_fonts)}")
    print(f"Application fonts: {len(app_fonts)}")
 
+Configuring fontconfig
+----------------------
+
+If fontconfig does not return a font you expect, it may not be in any of the
+configured font search paths. fontconfig is configured via XML files, typically
+located in:
+
+- ``~/.config/fontconfig/fonts.conf`` (user-level, Linux/macOS)
+- ``/etc/fonts/local.conf`` or ``/etc/fonts/conf.d/`` (system-level)
+
+To add a custom font directory, create or edit ``~/.config/fontconfig/fonts.conf``::
+
+   <?xml version="1.0"?>
+   <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+   <fontconfig>
+     <dir>/path/to/your/fonts</dir>
+   </fontconfig>
+
+After editing the configuration, rebuild the font cache::
+
+   fc-cache -f
+
+You can verify the new directory is scanned by checking ``get_font_dirs()``::
+
+   import fontconfig
+   config = fontconfig.Config.get_current()
+   print(config.get_font_dirs())
+
+For the full reference on fontconfig configuration — including aliases, rules,
+substitutions, and per-application settings — see the
+`fontconfig user documentation <https://www.freedesktop.org/software/fontconfig/fontconfig-user.html>`_.
+
 Working with Character Sets
 ----------------------------
 

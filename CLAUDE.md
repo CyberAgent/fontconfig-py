@@ -301,9 +301,13 @@ matched = config.font_match(pattern)
 
 Prerequisites: `gh` CLI (authenticated) and `uv` installed.
 
-### Step 1 — Fill in the `[Unreleased]` section of `CHANGELOG.md`
+### Ongoing — Keep `[Unreleased]` up to date
 
-Add entries under `## [Unreleased]` as features and fixes land throughout development. Use concise 1-2 line entries categorised under `Added`, `Changed`, `Fixed`, `Documentation`, etc.
+Every pull request that makes a user-facing change should add an entry under `## [Unreleased]` in `CHANGELOG.md`. Use concise 1-2 line entries categorised under `Added`, `Changed`, `Fixed`, `Documentation`, etc. This is also enforced by the PR checklist in `.github/PULL_REQUEST_TEMPLATE.md`.
+
+### Step 1 — Verify the `[Unreleased]` section before releasing
+
+Confirm that `## [Unreleased]` contains entries covering everything that will ship. The release script will refuse to proceed if the section is empty.
 
 ### Step 2 — Run the release script
 

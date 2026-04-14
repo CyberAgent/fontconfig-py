@@ -1,0 +1,112 @@
+name: Auto Release
+
+# Triggers when a release/v* branch is merged into main.
+# Creates the git tag and GitHub Release, which in turn triggers
+# the wheels.yaml workflow to build and publish to PyPI.
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create tag and GitHub Release
+    runs-on: ubuntu-latest
+    # Only run when a release branch is actually merged (not just closed/abandoned)
+    if: >
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/v')
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Check out the merge commit on main (default for pull_request events)
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - name: Extract version from __init__.py
+        id: version
+        run: |
+          VERSION=$(python3 -c "
+          import re
+          m = re.search(r'__version__ = \"([^\"]+)\"', open('src/fontconfig/__init__.py').read())
+          if not m:
+              raise SystemExit('__version__ not found in src/fontconfig/__init__.py')
+          print(m.group(1))
+          ")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $VERSION"
+
+      - name: Check if tag already exists
+        id: tag_check
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git ls-remote --exit-code origin "refs/tags/$TAG" > /dev/null 2>&1; then
+            echo "Tag $TAG already exists — skipping release creation."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract changelog notes for this version
+        if: steps.tag_check.outputs.exists == 'false'
+        id: changelog
+        run: |
+          NOTES_FILE=$(mktemp)
+          python3 - "${{ steps.version.outputs.version }}" "$NOTES_FILE" <<'PYEOF'
+          import re, sys
+
+          version, out_path = sys.argv[1], sys.argv[2]
+          with open("CHANGELOG.md") as f:
+              content = f.read()
+
+          # Match the versioned section body (between this heading and the next)
+          pattern = re.compile(
+              r"## \[" + re.escape(version) + r"\][^\n]*\n"
+              r"(.*?)"
+              r"(?=^## \[|\Z)",
+              re.DOTALL | re.MULTILINE,
+          )
+          m = pattern.search(content)
+          if not m:
+              print(f"Warning: no CHANGELOG section found for [{version}]", file=sys.stderr)
+              body = f"Release {version}"
+          else:
+              body = m.group(1).strip()
+
+          with open(out_path, "w") as f:
+              f.write(body + "\n")
+
+          print(f"Extracted {len(body)} characters of release notes")
+          PYEOF
+          echo "notes_file=$NOTES_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Configure git identity
+        if: steps.tag_check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        if: steps.tag_check.outputs.exists == 'false'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          git tag "$TAG"
+          git push origin "$TAG"
+          echo "Pushed tag $TAG"
+
+      - name: Create GitHub Release
+        if: steps.tag_check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "Release ${{ steps.version.outputs.version }}" \
+            --notes-file "${{ steps.changelog.outputs.notes_file }}"
+          echo "GitHub Release created for ${{ steps.version.outputs.tag }}"

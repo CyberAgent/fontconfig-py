@@ -226,74 +226,27 @@ feat: Add CharSet support for Unicode character sets
 
 **Note**: This section is for maintainers. Contributors should focus on submitting pull requests for features and fixes.
 
-The project uses a **pull request-based release workflow**:
+Prerequisites: `gh` CLI (authenticated) and `uv` installed.
 
 ### Creating a Release
 
-1. **Create a release branch** from main:
+1. **Keep `CHANGELOG.md` up to date** as development proceeds — add entries under `## [Unreleased]` for each notable change.
+
+2. **Run the release script**:
 
    ```bash
-   git checkout main
-   git pull origin main
-   git checkout -b release/vX.Y.Z
+   bash scripts/release.sh vX.Y.Z
    ```
 
-2. **Update version** in `src/fontconfig/__init__.py`:
+   This creates the `release/vX.Y.Z` branch, bumps the version, updates `CHANGELOG.md`, runs `uv sync`, and opens a PR automatically.
 
-   ```python
-   __version__ = "X.Y.Z"
-   ```
-
-3. **Update CHANGELOG.md**:
-
-   - Change `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`
-   - Or add new version section with changes categorized under Fixed/Added/Changed/Documentation
-   - Use concise 1-2 line entries for each change
-
-4. **Update lock file**:
-
-   ```bash
-   uv sync
-   ```
-
-5. **Create pull request**:
-
-   ```bash
-   git add src/fontconfig/__init__.py CHANGELOG.md uv.lock
-   git commit -m "Bump version to X.Y.Z"
-   git push -u origin release/vX.Y.Z
-   gh pr create --title "Release vX.Y.Z" --body "Release summary..."
-   ```
-
-6. **Merge after approval**:
-
-   - Wait for CI checks to pass
-   - Get code review approval
-   - Merge to main (**NEVER commit directly to main**)
-
-7. **Create git tag and GitHub Release** (after merge):
-
-   ```bash
-   git checkout main
-   git pull origin main
-   git tag vX.Y.Z
-   git push origin vX.Y.Z
-   gh release create vX.Y.Z --title "Release X.Y.Z" --notes-from-tag
-   ```
-
-8. **PyPI publishing happens automatically** when the GitHub Release is created
-
-### Release Branch Naming
-
-- Use `release/vX.Y.Z` format (e.g., `release/v1.0.1`)
-- This ensures consistency and clarity
+3. **Review and merge the PR** — wait for CI, get approval, then merge to `main`. Everything after is automatic: the `auto-release` workflow creates the git tag and GitHub Release, which triggers wheel builds and PyPI publishing.
 
 ### Important Notes
 
-- NEVER commit version bumps directly to main
-- Always use a pull request for releases
-- The GitHub Actions workflow automatically publishes to PyPI when a release is created
-- See [CLAUDE.md](CLAUDE.md) for detailed technical documentation
+- NEVER commit directly to main — always use a pull request
+- Use `release/vX.Y.Z` branch naming (the automation keys on this prefix)
+- See [CLAUDE.md](CLAUDE.md) for full technical documentation
 
 ## Reporting Issues
 

@@ -7,9 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Infrastructure
+## [1.0.2] - 2026-04-14
 
-- Add automated release script (`scripts/release.sh`) and GitHub Actions workflow (`auto-release.yaml`) to streamline the release process (#68)
+- Add automated release tooling (#70)
+- docs: add section on configuring fontconfig search paths (#60)
+
+## ### Infrastructure
+
+- deps(deps-dev): update mypy requirement from >=1.18.2 to >=1.20.1 (#66)
+- deps(deps-dev): update cython requirement from >=3.0.0 to >=3.2.4 (#67)
+- deps(deps-dev): update pytest requirement from >=8.0 to >=9.0.3 (#68)
+- Bump pytest from 8.4.1 to 9.0.3 in the uv group across 1 directory (#69)
+- deps(deps-dev): update sphinx requirement from >=7.0 to >=8.1.3 (#64)
+- deps(deps-dev): update sphinx-rtd-theme requirement from >=3.0 to >=3.1.0 (#65)
+- deps(deps-dev): update ruff requirement from >=0.4 to >=0.15.10 (#63)
+- deps(deps-dev): update setuptools requirement from >=61.0 to >=82.0.1 (#62)
+- ci(deps): bump pypa/cibuildwheel from 3.4.0 to 3.4.1 (#61)
+- Bump requests from 2.32.4 to 2.33.0 in the uv group across 1 directory (#59)
+- ci(deps): bump pypa/cibuildwheel from 3.3.1 to 3.4.0 (#58)
+- Bump urllib3 from 2.5.0 to 2.6.3 (#57)
+- ci(deps): bump actions/download-artifact from 7 to 8 (#56)
+- ci(deps): bump actions/upload-artifact from 6 to 7 (#55)
+- ci(deps): bump pypa/cibuildwheel from 3.3.0 to 3.3.1 (#54)
 
 ## [1.0.1] - 2025-12-23
 

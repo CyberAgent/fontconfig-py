@@ -2,4 +2,4 @@
 
 from .fontconfig import *  # noqa: F401,F403
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"

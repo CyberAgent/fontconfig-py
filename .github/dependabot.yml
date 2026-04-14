@@ -30,8 +30,7 @@ updates:
     versioning-strategy: increase
     # Group minor and patch updates to reduce PR noise
     groups:
-      development-dependencies:
-        dependency-type: "development"
+      minor-and-patch:
         update-types:
           - "minor"
           - "patch"

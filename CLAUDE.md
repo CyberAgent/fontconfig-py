@@ -308,7 +308,7 @@ Every pull request should have an appropriate label so release-drafter can categ
 | Label | CHANGELOG section |
 | --- | --- |
 | `breaking-change` | Breaking Changes |
-| `feature` | Added |
+| `feature`, `enhancement` | Added |
 | `changed` | Changed |
 | `bug` | Fixed |
 | `documentation` | Documentation |

@@ -12,8 +12,6 @@
 #   - gh CLI (https://cli.github.com/) installed and authenticated
 #   - uv installed (https://docs.astral.sh/uv/)
 #   - Git remote "origin" pointing to the GitHub repo
-#
-# Prerequisites:
 #   - A 'draft-next' draft release created by the release-drafter workflow
 #
 # The script:
@@ -105,10 +103,15 @@ fi
 
 # draft-next release must exist and contain at least one real entry
 echo "Fetching release notes from draft-next draft..."
-DRAFT_BODY=$(gh release view "draft-next" --json body --jq '.body' 2>/dev/null || echo "")
+_DRAFT_STDERR=$(mktemp)
+if ! DRAFT_BODY=$(gh release view "draft-next" --json body --jq '.body' 2>"$_DRAFT_STDERR"); then
+    _DRAFT_ERROR=$(cat "$_DRAFT_STDERR"); rm -f "$_DRAFT_STDERR"
+    die "Failed to read 'draft-next' draft release: ${_DRAFT_ERROR}"
+fi
+rm -f "$_DRAFT_STDERR"
 DRAFT_BODY_TRIMMED=$(printf '%s' "$DRAFT_BODY" | tr -d '[:space:]')
 if [[ -z "$DRAFT_BODY_TRIMMED" ]]; then
-    die "No 'draft-next' draft release found. Merge a PR first so release-drafter can generate notes, then try again."
+    die "'draft-next' draft release body is empty. Merge a PR with a release label first so release-drafter can generate notes, then try again."
 fi
 
 echo "All checks passed."

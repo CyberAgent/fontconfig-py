@@ -12,14 +12,15 @@
 #   - gh CLI (https://cli.github.com/) installed and authenticated
 #   - uv installed (https://docs.astral.sh/uv/)
 #   - Git remote "origin" pointing to the GitHub repo
+#   - A 'draft-next' draft release created by the release-drafter workflow
 #
 # The script:
-#   1. Validates preconditions (clean tree, [Unreleased] in CHANGELOG, no existing branch)
+#   1. Validates preconditions (clean tree, draft-next release exists, no existing branch)
 #   2. Creates branch release/vX.Y.Z from an up-to-date main
 #   3. Bumps __version__ in src/fontconfig/__init__.py
-#   4. Moves CHANGELOG [Unreleased] content into a new versioned section (keeps [Unreleased] heading)
+#   4. Writes draft-next release notes into a new versioned CHANGELOG section
 #   5. Runs uv sync to update the lock file
-#   6. Commits, pushes, and opens a GitHub PR
+#   6. Commits, pushes, and opens a GitHub PR (labeled skip-changelog)
 
 set -euo pipefail
 
@@ -80,23 +81,6 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
     die "Working tree has uncommitted changes. Commit or stash them first."
 fi
 
-# CHANGELOG has [Unreleased] section
-if ! grep -q "^## \[Unreleased\]" CHANGELOG.md; then
-    die "CHANGELOG.md has no '## [Unreleased]' section. Add one before releasing."
-fi
-
-# [Unreleased] section has content
-UNRELEASED_BODY=$(python3 -c "
-import re
-with open('CHANGELOG.md') as f:
-    content = f.read()
-m = re.search(r'## \[Unreleased\][^\n]*\n(.*?)(?=^## \[|\Z)', content, re.DOTALL | re.MULTILINE)
-print(m.group(1).strip() if m else '')
-")
-if [[ -z "$UNRELEASED_BODY" ]]; then
-    die "The [Unreleased] section in CHANGELOG.md is empty. Add entries describing what changed before releasing."
-fi
-
 # Version heading does not already exist
 if grep -q "^## \[${VERSION}\]" CHANGELOG.md; then
     die "CHANGELOG.md already has a section for [${VERSION}]."
@@ -115,6 +99,19 @@ fi
 # Tag does not already exist
 if git ls-remote --exit-code origin "refs/tags/${TAG}" &>/dev/null; then
     die "Tag '${TAG}' already exists on remote."
+fi
+
+# draft-next release must exist and contain at least one real entry
+echo "Fetching release notes from draft-next draft..."
+_DRAFT_STDERR=$(mktemp)
+if ! DRAFT_BODY=$(gh release view "draft-next" --json body --jq '.body' 2>"$_DRAFT_STDERR"); then
+    _DRAFT_ERROR=$(cat "$_DRAFT_STDERR"); rm -f "$_DRAFT_STDERR"
+    die "Failed to read 'draft-next' draft release: ${_DRAFT_ERROR}"
+fi
+rm -f "$_DRAFT_STDERR"
+DRAFT_BODY_TRIMMED=$(printf '%s' "$DRAFT_BODY" | tr -d '[:space:]')
+if [[ -z "$DRAFT_BODY_TRIMMED" ]]; then
+    die "'draft-next' draft release body is empty. Merge a PR with a release label first so release-drafter can generate notes, then try again."
 fi
 
 echo "All checks passed."
@@ -162,39 +159,34 @@ print(f"  {path}: set __version__ = \"{version}\"")
 PYEOF
 
 # ---------------------------------------------------------------------------
-# Update CHANGELOG.md (use Python for cross-platform safety)
+# Update CHANGELOG.md from draft-next release notes (use Python for cross-platform safety)
 # ---------------------------------------------------------------------------
 
-echo "Updating CHANGELOG.md..."
-python3 - "$VERSION" "$TODAY" <<'PYEOF'
+echo "Updating CHANGELOG.md from draft release notes..."
+python3 - "$VERSION" "$TODAY" "$DRAFT_BODY" <<'PYEOF'
 import re, sys
 
-version, today = sys.argv[1], sys.argv[2]
+version, today, draft_body = sys.argv[1], sys.argv[2], sys.argv[3]
 path = "CHANGELOG.md"
 
 with open(path) as f:
     content = f.read()
 
-# Match the [Unreleased] block: heading + optional body up to the next ## heading
+# Match the entire [Unreleased] block: heading + body up to the next ## heading
 pattern = re.compile(
-    r"(## \[Unreleased\][^\n]*\n)"   # group 1: the heading line
-    r"(.*?)"                          # group 2: body (may be empty)
-    r"(?=^## \[|\Z)",                  # lookahead: next version heading or EOF
+    r"(## \[Unreleased\][^\n]*\n)"  # group 1: heading line
+    r"(.*?)"                         # group 2: existing body (cleared)
+    r"(?=^## \[|\Z)",                # lookahead: next versioned heading or EOF
     re.DOTALL | re.MULTILINE,
 )
-
 m = pattern.search(content)
 if not m:
     print("Error: could not locate [Unreleased] block in CHANGELOG.md", file=sys.stderr)
     sys.exit(1)
 
-unreleased_heading = m.group(1)  # "## [Unreleased]\n"
-unreleased_body = m.group(2)     # content between headings
-
-# Build replacement: keep [Unreleased] (empty), insert new versioned section
-versioned_section = f"## [{version}] - {today}\n{unreleased_body}"
-replacement = unreleased_heading + "\n" + versioned_section
-
+# Replace: keep [Unreleased] heading (empty), then insert new versioned section
+versioned_section = f"## [{version}] - {today}\n\n{draft_body.strip()}\n\n"
+replacement = m.group(1) + "\n" + versioned_section
 new_content = content[: m.start()] + replacement + content[m.end() :]
 
 with open(path, "w") as f:
@@ -224,6 +216,7 @@ git push -u origin "$BRANCH"
 echo "Creating pull request..."
 gh pr create \
     --title "Release v${VERSION}" \
+    --label "skip-changelog" \
     --body "$(cat <<EOF
 ## Release v${VERSION}
 

@@ -4,17 +4,25 @@ Execute the release workflow for fontconfig-py. Follow every step below in order
 
 Read `src/fontconfig/__init__.py` and extract `__version__`.
 
-## Step 2 — Validate CHANGELOG
+## Step 2 — Verify the draft-next release
 
-Read `CHANGELOG.md`. Find the `## [Unreleased]` section (everything between that heading and the next `## [` heading). If it contains no non-whitespace content, stop and tell the user:
+Run:
 
-> The `[Unreleased]` section in CHANGELOG.md is empty. Please add content describing what changed before running a release.
+```bash
+gh release view "draft-next" --json body --jq '.body'
+```
+
+If the command fails or the body is empty, stop and tell the user:
+
+> No `draft-next` draft release found. Merge at least one labeled PR so release-drafter can generate notes, then try again. You can also create it manually at <https://github.com/CyberAgent/fontconfig-py/releases/new>
+
+If the draft exists, show the user a brief summary of its content and ask them to confirm it looks complete before proceeding.
 
 ## Step 3 — Determine the target version
 
 **If `$ARGUMENTS` is provided:** trim any surrounding whitespace. If it does not match `(?:v)?\d+\.\d+\.\d+`, tell the user the format must be `X.Y.Z` or `vX.Y.Z` and stop.
 
-**If `$ARGUMENTS` is empty:** infer the next version from the `[Unreleased]` section headings and the current version:
+**If `$ARGUMENTS` is empty:** infer the next version from the draft-next body headings and the current version:
 
 - Any `### Breaking Changes` heading → **major** bump (`X+1.0.0`)
 - Any `### Added` heading (no breaking changes) → **minor** bump (`x.Y+1.0`)

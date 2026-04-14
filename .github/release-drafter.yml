@@ -1,0 +1,22 @@
+name-template: 'Draft Release Notes'
+tag-template: 'draft-next'
+categories:
+  - title: '### Breaking Changes'
+    labels: ['breaking-change']
+  - title: '### Added'
+    labels: ['feature', 'enhancement']
+  - title: '### Changed'
+    labels: ['changed']
+  - title: '### Fixed'
+    labels: ['bug']
+  - title: '### Documentation'
+    labels: ['documentation']
+  - title: '### Infrastructure'
+    labels: ['infrastructure', 'dependencies']
+  - title: '### Technical'
+    labels: ['technical']
+exclude-labels: ['skip-changelog']
+change-template: '- $TITLE (#$NUMBER)'
+change-title-escapes: '\<*_&'
+template: |
+  $CHANGES

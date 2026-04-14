@@ -110,3 +110,13 @@ jobs:
             --title "Release ${{ steps.version.outputs.version }}" \
             --notes-file "${{ steps.changelog.outputs.notes_file }}"
           echo "GitHub Release created for ${{ steps.version.outputs.tag }}"
+
+      - name: Delete stale draft-next release
+        if: steps.tag_check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "draft-next" &>/dev/null; then
+            gh release delete "draft-next" --yes
+            echo "Deleted stale draft-next release"
+          fi

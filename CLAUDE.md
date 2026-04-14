@@ -301,13 +301,26 @@ matched = config.font_match(pattern)
 
 Prerequisites: `gh` CLI (authenticated) and `uv` installed.
 
-### Ongoing — Keep `[Unreleased]` up to date
+### Ongoing — Label PRs for release notes
 
-Every pull request that makes a user-facing change should add an entry under `## [Unreleased]` in `CHANGELOG.md`. Use concise 1-2 line entries categorised under `Added`, `Changed`, `Fixed`, `Documentation`, etc. This is also enforced by the PR checklist in `.github/PULL_REQUEST_TEMPLATE.md`.
+Every pull request should have an appropriate label so release-drafter can categorise it automatically. Available labels (defined in `.github/release-drafter.yml`):
 
-### Step 1 — Verify the `[Unreleased]` section before releasing
+| Label | CHANGELOG section |
+| --- | --- |
+| `breaking-change` | Breaking Changes |
+| `feature`, `enhancement` | Added |
+| `changed` | Changed |
+| `bug` | Fixed |
+| `documentation` | Documentation |
+| `infrastructure`, `dependencies` | Infrastructure |
+| `technical` | Technical |
+| `skip-changelog` | (excluded — use for release PRs and internal changes) |
 
-Confirm that `## [Unreleased]` contains entries covering everything that will ship. The release script will refuse to proceed if the section is empty.
+Release-drafter accumulates entries from merged PRs into a rolling draft release tagged `draft-next` on GitHub.
+
+### Step 1 — Verify the draft release before releasing
+
+Check that the `draft-next` draft at `https://github.com/CyberAgent/fontconfig-py/releases` covers everything that will ship. Edit it directly on GitHub if any entry needs rewording before the release script runs.
 
 ### Step 2 — Run the release script
 
@@ -315,13 +328,13 @@ Confirm that `## [Unreleased]` contains entries covering everything that will sh
 bash scripts/release.sh vX.Y.Z
 ```
 
-The script validates preconditions (clean tree, `[Unreleased]` section present, no existing branch or tag), then:
+The script validates preconditions (clean tree, `draft-next` draft exists, no existing branch or tag), then:
 
 - Creates branch `release/vX.Y.Z` from an up-to-date `main`
 - Bumps `__version__` in `src/fontconfig/__init__.py`
-- Moves the `[Unreleased]` content into a new `[X.Y.Z] - YYYY-MM-DD` section (keeping the `[Unreleased]` heading for the next release)
+- Writes the `draft-next` content into a new `[X.Y.Z] - YYYY-MM-DD` section in `CHANGELOG.md`
 - Runs `uv sync`
-- Commits, pushes, and opens a GitHub PR titled "Release vX.Y.Z"
+- Commits, pushes, and opens a GitHub PR titled "Release vX.Y.Z" (labeled `skip-changelog`)
 
 ### Step 3 — Review and merge the PR
 
@@ -329,7 +342,7 @@ The script validates preconditions (clean tree, `[Unreleased]` section present, 
 - Get code review approval
 - Merge to `main` — **NEVER commit directly to main**
 
-Everything after the merge is automatic: the `auto-release` workflow (`.github/workflows/auto-release.yaml`) creates the git tag and GitHub Release, which triggers `wheels.yaml` to build wheels and publish to PyPI.
+Everything after the merge is automatic: the `auto-release` workflow (`.github/workflows/auto-release.yaml`) creates the git tag and GitHub Release from `CHANGELOG.md`, then deletes the stale `draft-next` draft. This triggers `wheels.yaml` to build wheels and publish to PyPI.
 
 **Important notes:**
 

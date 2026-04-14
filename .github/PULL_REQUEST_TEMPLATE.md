@@ -46,12 +46,13 @@ Fixes # (issue)
 - [ ] Linting passes (`uvx ruff check .`)
 - [ ] Type checking passes (`uv run mypy src/ tests/`)
 - [ ] Documentation updated (if applicable)
-- [ ] CHANGELOG.md updated following [Keep a Changelog][keepachangelog]
-      format (for user-facing changes)
+- [ ] PR has an appropriate label for release notes
+      (`feature`/`enhancement`, `bug`, `breaking-change`, `changed`, `documentation`,
+      `infrastructure`, `dependencies`, `technical`, or `skip-changelog`
+      if no user-facing change)
 - [ ] Follows [conventional commit][conventionalcommits] message format
 - [ ] Includes tests for new functionality (if applicable)
 
-[keepachangelog]: https://keepachangelog.com/
 [conventionalcommits]: https://www.conventionalcommits.org/
 
 ## Additional Notes

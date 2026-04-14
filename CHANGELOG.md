@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Infrastructure
+
+- Add automated release script (`scripts/release.sh`) and GitHub Actions workflow (`auto-release.yaml`) to streamline the release process (#68)
+
 ## [1.0.1] - 2025-12-23
 
 ### Changed

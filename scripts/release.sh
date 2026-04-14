@@ -85,6 +85,18 @@ if ! grep -q "^## \[Unreleased\]" CHANGELOG.md; then
     die "CHANGELOG.md has no '## [Unreleased]' section. Add one before releasing."
 fi
 
+# [Unreleased] section has content
+UNRELEASED_BODY=$(python3 -c "
+import re
+with open('CHANGELOG.md') as f:
+    content = f.read()
+m = re.search(r'## \[Unreleased\][^\n]*\n(.*?)(?=^## \[)', content, re.DOTALL | re.MULTILINE)
+print(m.group(1).strip() if m else '')
+")
+if [[ -z "$UNRELEASED_BODY" ]]; then
+    die "The [Unreleased] section in CHANGELOG.md is empty. Add entries describing what changed before releasing."
+fi
+
 # Version heading does not already exist
 if grep -q "^## \[${VERSION}\]" CHANGELOG.md; then
     die "CHANGELOG.md already has a section for [${VERSION}]."

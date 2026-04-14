@@ -208,6 +208,11 @@ if command -v pkg-config &>/dev/null && pkg-config --exists fontconfig freetype2
     LDFLAGS="$(pkg-config --libs fontconfig freetype2) ${LDFLAGS:-}" \
     uv sync
 else
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        echo "Warning: pkg-config metadata for fontconfig/freetype2 not found." >&2
+        echo "  uv sync may fail. If it does, install the missing packages with:" >&2
+        echo "    brew install pkg-config fontconfig freetype" >&2
+    fi
     uv sync
 fi
 

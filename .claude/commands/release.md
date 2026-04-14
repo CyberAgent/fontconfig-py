@@ -6,13 +6,13 @@ Read `src/fontconfig/__init__.py` and extract `__version__`.
 
 ## Step 2 — Validate CHANGELOG
 
-Read `CHANGELOG.md`. Find the `## [Unreleased]` section (everything between that heading and the next `## [` heading). If it contains no bullet points (`- `), stop and tell the user:
+Read `CHANGELOG.md`. Find the `## [Unreleased]` section (everything between that heading and the next `## [` heading). If it contains no non-whitespace content, stop and tell the user:
 
-> The `[Unreleased]` section in CHANGELOG.md is empty. Please add entries describing what changed before running a release.
+> The `[Unreleased]` section in CHANGELOG.md is empty. Please add content describing what changed before running a release.
 
 ## Step 3 — Determine the target version
 
-**If `$ARGUMENTS` is provided:** trim any surrounding whitespace. If it does not match `v\d+\.\d+\.\d+`, tell the user the format must be `vX.Y.Z` and stop.
+**If `$ARGUMENTS` is provided:** trim any surrounding whitespace. If it does not match `(?:v)?\d+\.\d+\.\d+`, tell the user the format must be `X.Y.Z` or `vX.Y.Z` and stop.
 
 **If `$ARGUMENTS` is empty:** infer the next version from the `[Unreleased]` section headings and the current version:
 
@@ -33,7 +33,7 @@ bash scripts/release.sh <VERSION>
 
 Capture stdout and stderr. If the script exits non-zero, surface the error message and offer remediation advice:
 
-- `branch release/<VERSION> already exists` → delete the branch with `git branch -d release/<VERSION>` and retry, or choose a different version.
+- `branch release/v<VERSION> already exists` → delete the branch with `git branch -d release/v<VERSION>` and retry, or choose a different version.
 - `tag v<VERSION> already exists` → choose a different version.
 - `already present in CHANGELOG` → choose a different version.
 - Any other error → show the raw error and suggest the user investigate.

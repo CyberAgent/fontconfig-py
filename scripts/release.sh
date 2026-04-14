@@ -90,7 +90,7 @@ UNRELEASED_BODY=$(python3 -c "
 import re
 with open('CHANGELOG.md') as f:
     content = f.read()
-m = re.search(r'## \[Unreleased\][^\n]*\n(.*?)(?=^## \[)', content, re.DOTALL | re.MULTILINE)
+m = re.search(r'## \[Unreleased\][^\n]*\n(.*?)(?=^## \[|\Z)', content, re.DOTALL | re.MULTILINE)
 print(m.group(1).strip() if m else '')
 ")
 if [[ -z "$UNRELEASED_BODY" ]]; then
@@ -179,7 +179,7 @@ with open(path) as f:
 pattern = re.compile(
     r"(## \[Unreleased\][^\n]*\n)"   # group 1: the heading line
     r"(.*?)"                          # group 2: body (may be empty)
-    r"(?=^## \[)",                    # lookahead: next version heading
+    r"(?=^## \[|\Z)",                  # lookahead: next version heading or EOF
     re.DOTALL | re.MULTILINE,
 )
 

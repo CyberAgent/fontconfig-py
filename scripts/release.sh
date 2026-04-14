@@ -200,7 +200,16 @@ PYEOF
 # ---------------------------------------------------------------------------
 
 echo "Running uv sync..."
-uv sync
+# On macOS with Homebrew, the compiler cannot find fontconfig/freetype headers
+# unless the flags are passed explicitly.  Use pkg-config when available so the
+# command is portable and does not hard-code Homebrew paths.
+if command -v pkg-config &>/dev/null && pkg-config --exists fontconfig freetype2 2>/dev/null; then
+    CFLAGS="$(pkg-config --cflags fontconfig freetype2) ${CFLAGS:-}" \
+    LDFLAGS="$(pkg-config --libs fontconfig freetype2) ${LDFLAGS:-}" \
+    uv sync
+else
+    uv sync
+fi
 
 # ---------------------------------------------------------------------------
 # Commit, push, open PR

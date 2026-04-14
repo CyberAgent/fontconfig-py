@@ -283,9 +283,13 @@ matched = config.font_match(pattern)
 
 - Ensure git submodules are initialized: `git submodule update --init --recursive`
 - Check system dependencies are installed (see `build_third_party.sh`)
-- On macOS, ensure Xcode command line tools are installed. Also, set the following environment variables in the local environment:
-  - `CC=clang`
-  - `CFLAGS="-I/opt/homebrew/include -L/opt/homebrew/lib"`
+- On macOS, ensure Xcode command line tools are installed. The compiler cannot find fontconfig/freetype headers unless the flags are passed explicitly. Use `pkg-config` (installed with `brew install pkg-config`):
+
+  ```bash
+  CFLAGS=$(pkg-config --cflags fontconfig freetype2) \
+  LDFLAGS=$(pkg-config --libs fontconfig freetype2) \
+  uv sync
+  ```
 
 **Test failures on "family=Arial":**
 

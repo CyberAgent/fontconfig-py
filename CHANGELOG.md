@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add automated release tooling (#70)
 - docs: add section on configuring fontconfig search paths (#60)
 
-## ### Infrastructure
+### Infrastructure
 
 - deps(deps-dev): update mypy requirement from >=1.18.2 to >=1.20.1 (#66)
 - deps(deps-dev): update cython requirement from >=3.0.0 to >=3.2.4 (#67)

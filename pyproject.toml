@@ -50,7 +50,7 @@ fontconfig = ["py.typed", "*.pyi"]
 [dependency-groups]
 dev = [
 	"pytest>=9.0.3",
-	"ruff>=0.15.10",
+	"ruff>=0.15.11",
     "mypy>=1.20.1",
 ]
 docs = [

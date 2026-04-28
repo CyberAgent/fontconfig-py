@@ -51,7 +51,7 @@ fontconfig = ["py.typed", "*.pyi"]
 dev = [
 	"pytest>=9.0.3",
 	"ruff>=0.15.11",
-    "mypy>=1.20.1",
+    "mypy>=1.20.2",
 ]
 docs = [
     "sphinx>=8.1.3",

@@ -49,7 +49,7 @@ fontconfig = ["py.typed", "*.pyi"]
 
 [dependency-groups]
 dev = [
-	"pytest>=9.1.0",
+	"pytest>=9.1.1",
 	"ruff>=0.15.16",
     "mypy>=2.1.0",
 ]

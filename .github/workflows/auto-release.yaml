@@ -24,7 +24,7 @@ jobs:
       startsWith(github.event.pull_request.head.ref, 'release/v')
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # Check out the merge commit on main (default for pull_request events)
           ref: ${{ github.event.pull_request.merge_commit_sha }}

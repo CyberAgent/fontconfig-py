@@ -61,8 +61,12 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # Set Homebrew-specific directories for fontconfig by default on macOS
     export FC_SYSCONFDIR="$(brew --prefix)/etc"
     export FC_LOCALSTATEDIR="$(brew --prefix)/var"
-    # Make sure conflicting packages are not installed
-    brew uninstall --ignore-dependencies -f fontconfig freetype
+    # Make sure conflicting packages are not installed.
+    # json-c is uninstalled too: when present, fontconfig's configure detects it
+    # and builds test/test-conf, but Homebrew ships json-c arm64-only, so the
+    # x86_64 slice of the universal2 build fails to link. We only need the
+    # static library, not fontconfig's test suite.
+    brew uninstall --ignore-dependencies -f fontconfig freetype json-c
     brew install gperftools gettext automake libtool
     prepare_macos_dirs
 elif command -v dnf &> /dev/null; then

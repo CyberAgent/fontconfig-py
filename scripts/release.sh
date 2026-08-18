@@ -252,5 +252,4 @@ EOF
 echo ""
 echo "Done. Release PR for v${VERSION} is open."
 echo "After it is merged, the tag, Release, and wheel build happen automatically."
-echo "The PyPI upload then waits for your approval of the 'release' environment"
-echo "deployment -- watch for it in the Actions tab."
+echo "The PyPI upload then waits for your approval of the 'release' environment deployment — watch for it in the Actions tab."

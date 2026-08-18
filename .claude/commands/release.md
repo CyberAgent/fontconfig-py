@@ -55,6 +55,6 @@ Then summarise next steps:
 1. **Wait for CI checks** to pass on the PR (wheels build + tests on 3 platforms).
 2. **Review and merge the PR** via GitHub — never commit directly to `main`.
 3. **Auto-release fires automatically** after merge: `auto-release.yaml` creates the git tag and GitHub Release.
-4. **Wheels are built and published** by `wheels.yaml` triggered by the GitHub Release.
-5. **Manual approval required:** the `release` environment in GitHub Actions gates the PyPI upload — watch for an approval request in the Actions UI and approve it.
+4. **Wheels are built** by `wheels.yaml`, which `auto-release` dispatches explicitly (a `GITHUB_TOKEN` Release triggers nothing).
+5. **Approve the PyPI upload:** the run pauses after the wheels build until a `fontconfig-py-maintainer` approves the `release` environment deployment in the Actions tab.
 6. **Verify publication** once complete: `pip index versions fontconfig-py`

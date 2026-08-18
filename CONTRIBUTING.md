@@ -240,7 +240,9 @@ Prerequisites: `gh` CLI (authenticated) and `uv` installed.
 
    This creates the `release/vX.Y.Z` branch, bumps the version, updates `CHANGELOG.md`, runs `uv sync`, and opens a PR automatically.
 
-3. **Review and merge the PR** — wait for CI, get approval, then merge to `main`. Everything after is automatic: the `auto-release` workflow creates the git tag and GitHub Release, which triggers wheel builds and PyPI publishing.
+3. **Review and merge the PR** — wait for CI, get approval, then merge to `main`. The `auto-release` workflow then creates the git tag and GitHub Release and dispatches the wheel build (a Release created by `GITHUB_TOKEN` does not trigger workflows on its own).
+
+4. **Approve the PyPI upload** — the upload runs in the `release` environment, which requires maintainer approval, so the run pauses after the wheels build. Approve the pending deployment in the Actions tab to publish.
 
 ### Important Notes
 

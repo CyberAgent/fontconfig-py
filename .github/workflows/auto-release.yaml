@@ -1,8 +1,14 @@
 name: Auto Release
 
 # Triggers when a release/v* branch is merged into main.
-# Creates the git tag and GitHub Release, which in turn triggers
-# the wheels.yaml workflow to build and publish to PyPI.
+# Creates the git tag and GitHub Release, then dispatches wheels.yaml to build
+# the wheels and publish them to PyPI.
+#
+# The dispatch is required: this job authenticates as GITHUB_TOKEN, and GitHub
+# suppresses workflow triggers for events raised by GITHUB_TOKEN, so neither the
+# tag push nor the release publication reaches wheels.yaml on its own.
+# workflow_dispatch is a documented exception to that rule: dispatch events
+# always create workflow runs, whoever raised them.
 
 on:
   pull_request:
@@ -13,6 +19,8 @@ on:
 
 permissions:
   contents: write
+  # Required to dispatch wheels.yaml.
+  actions: write
 
 jobs:
   create-release:
@@ -110,6 +118,19 @@ jobs:
             --title "Release ${{ steps.version.outputs.version }}" \
             --notes-file "${{ steps.changelog.outputs.notes_file }}"
           echo "GitHub Release created for ${{ steps.version.outputs.tag }}"
+
+      - name: Trigger wheel build and PyPI publish
+        if: steps.tag_check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          # Dispatch against the default branch so the current workflow
+          # definition is used, and pass the tag as the ref to build.
+          gh workflow run wheels.yaml \
+            --ref "${{ github.event.repository.default_branch }}" \
+            --raw-field tag="$TAG"
+          echo "Dispatched wheels.yaml for $TAG"
 
       - name: Delete stale draft-next release
         if: steps.tag_check.outputs.exists == 'false'

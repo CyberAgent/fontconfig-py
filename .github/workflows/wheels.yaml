@@ -10,6 +10,16 @@ on:
   release:
     types:
       - published
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: >
+          Git tag to build and publish to PyPI (e.g. v1.0.3), resolved as
+          refs/tags/<tag>. The wheels are built from this tag, while the
+          workflow definition comes from the ref this run was dispatched
+          against -- so a tag predating this trigger can still be built.
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -26,6 +36,13 @@ jobs:
       - uses: actions/checkout@v7
         with:
           submodules: true
+          # On workflow_dispatch, build the requested tag rather than the ref
+          # the run was dispatched against. `refs/tags/` is prepended so a
+          # branch sharing the tag's name cannot be selected instead. Renders to
+          # an empty string for every other event, which leaves actions/checkout
+          # on its default ref (and its SHA pin -- passing `ref` explicitly
+          # would drop that pin and resolve by name instead).
+          ref: ${{ github.event.inputs.tag && format('refs/tags/{0}', github.event.inputs.tag) || '' }}
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v4.2.0
@@ -66,7 +83,12 @@ jobs:
     name: Upload release to PyPI
     needs: build_wheels
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'published'
+    # Releases created by auto-release.yaml use GITHUB_TOKEN, and GitHub does
+    # not emit a `release: published` event for those. auto-release.yaml
+    # therefore dispatches this workflow explicitly instead.
+    if: >
+      (github.event_name == 'release' && github.event.action == 'published') ||
+      github.event_name == 'workflow_dispatch'
     environment:
       name: release
       url: https://pypi.org/p/fontconfig-py

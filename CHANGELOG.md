@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-08-18
+
+> **Note:** 1.0.2 was tagged but never published to PyPI due to a CI issue (fixed in #109). Its changes are included in this release, so PyPI users upgrade directly from 1.0.1 to 1.0.3.
+
+### Infrastructure
+
+- Stop release-drafter doubling the category headings (#110)
+- Dispatch wheels.yaml from auto-release so PyPI upload runs (#109)
+- deps(deps-dev): update ruff requirement from >=0.16.1 to >=0.16.3 (#108)
+- deps(deps-dev): update setuptools requirement from >=83.0.0 to >=84.0.0 (#107)
+- ci(deps): bump pypa/cibuildwheel from 4.1.1 to 4.2.0 (#105)
+- deps(deps-dev): update ruff requirement from >=0.16.0 to >=0.16.1 (#104)
+- deps(deps-dev): update ruff requirement from >=0.15.21 to >=0.16.0 (#103)
+- deps(deps-dev): update cython requirement from >=3.2.8 to >=3.2.9 (#102)
+- ci(deps): bump pypa/cibuildwheel from 4.1.0 to 4.1.1 (#101)
+- Fix macOS universal2 wheel build broken by json-c on runner image (#100)
+- deps(deps-dev): update ruff requirement from >=0.15.20 to >=0.15.21 (#98)
+- deps(deps-dev): update mypy requirement from >=2.1.0 to >=2.3.0 (#97)
+- deps(deps-dev): update cython requirement from >=3.2.6 to >=3.2.8 (#96)
+- deps(deps-dev): update setuptools requirement from >=82.0.1 to >=83.0.0 (#95)
+- deps(deps-dev): update ruff requirement from >=0.15.17 to >=0.15.20 (#94)
+- deps(deps-dev): update cython requirement from >=3.2.5 to >=3.2.6 (#93)
+- ci(deps): Bump pypa/cibuildwheel from 3.4.1 to 4.1.0 (#88)
+- deps(deps-dev): Update ruff requirement from >=0.15.16 to >=0.15.17 (#90)
+- deps(deps-dev): Update pytest requirement from >=9.1.0 to >=9.1.1 (#92)
+- ci(deps): Bump actions/checkout from 6 to 7 (#91)
+- deps(deps-dev): Update pytest requirement from >=9.0.3 to >=9.1.0 (#89)
+- deps(deps-dev): Update ruff requirement from >=0.15.15 to >=0.15.16 (#87)
+- deps(deps-dev): Update ruff requirement from >=0.15.14 to >=0.15.15 (#85)
+- deps(deps-dev): Update cython requirement from >=3.2.4 to >=3.2.5 (#84)
+- deps(deps-dev): Update ruff requirement from >=0.15.13 to >=0.15.14 (#83)
+- chore(deps): Bump idna from 3.10 to 3.15 in the uv group across 1 directory (#82)
+- deps(deps-dev): update ruff requirement from >=0.15.12 to >=0.15.13 (#81)
+- deps(deps-dev): update mypy requirement from >=1.20.2 to >=2.1.0 (#80)
+- Bump urllib3 from 2.6.3 to 2.7.0 in the uv group across 1 directory (#79)
+- deps(deps-dev): update ruff requirement from >=0.15.11 to >=0.15.12 (#78)
+- deps(deps-dev): update mypy requirement from >=1.20.1 to >=1.20.2 (#77)
+- deps(deps-dev): update ruff requirement from >=0.15.10 to >=0.15.11 (#76)
+- ci(deps): bump release-drafter/release-drafter from 6 to 7 (#75)
+- Bump Pygments to 2.20.0 to fix ReDoS vulnerability (#74)
+- Fix uv sync on macOS by passing pkg-config flags (#73)
+
 ## [1.0.2] - 2026-04-14
 
 - Add automated release tooling (#70)

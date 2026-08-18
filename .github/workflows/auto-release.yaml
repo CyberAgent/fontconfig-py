@@ -2,7 +2,8 @@ name: Auto Release
 
 # Triggers when a release/v* branch is merged into main.
 # Creates the git tag and GitHub Release, then dispatches wheels.yaml to build
-# the wheels and publish them to PyPI.
+# the wheels. Publishing them to PyPI additionally requires a maintainer to
+# approve the `release` environment deployment.
 #
 # The dispatch is required: this job authenticates as GITHUB_TOKEN, and GitHub
 # suppresses workflow triggers for events raised by GITHUB_TOKEN, so neither the

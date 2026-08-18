@@ -243,10 +243,13 @@ See [CHANGELOG.md](CHANGELOG.md) for details.
 - [ ] CI checks pass
 - [ ] Code review approved
 
-After merging, the tag and GitHub Release are created automatically by the \`auto-release\` workflow, which then triggers the wheel build and PyPI publish.
+After merging, the \`auto-release\` workflow creates the tag and GitHub Release, then dispatches \`wheels.yaml\` to build the wheels.
+
+**The PyPI upload then waits for you.** The \`pypi-publish\` job runs in the \`release\` environment, which requires approval from the \`fontconfig-py-maintainer\` team — approve the pending deployment from the run's page in the Actions tab. Nothing reaches PyPI until you do.
 EOF
 )"
 
 echo ""
 echo "Done. Release PR for v${VERSION} is open."
-echo "After it is merged, the rest of the release happens automatically."
+echo "After it is merged, the tag, Release, and wheel build happen automatically."
+echo "The PyPI upload then waits for your approval of the 'release' environment deployment — watch for it in the Actions tab."

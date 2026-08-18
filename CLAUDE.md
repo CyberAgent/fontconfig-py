@@ -68,7 +68,7 @@ The build process is more complex than typical Python packages due to static lin
    - Uses cibuildwheel for multi-platform wheel building
    - Runs `build_third_party.sh` before Python build
    - Tests with pytest before uploading wheels
-   - Auto-publishes to PyPI on releases
+   - Publishes to PyPI after a maintainer approves the `release` environment deployment
 
 ### Python Limited API and Stable ABI (v1.0.0+)
 
@@ -346,13 +346,33 @@ The script validates preconditions (clean tree, `draft-next` draft exists, no ex
 - Get code review approval
 - Merge to `main` — **NEVER commit directly to main**
 
-Everything after the merge is automatic: the `auto-release` workflow (`.github/workflows/auto-release.yaml`) creates the git tag and GitHub Release from `CHANGELOG.md`, dispatches `wheels.yaml` to build the wheels and publish them to PyPI, then deletes the stale `draft-next` draft.
+Everything after the merge is automatic up to the upload itself: the `auto-release` workflow (`.github/workflows/auto-release.yaml`) creates the git tag and GitHub Release from `CHANGELOG.md`, dispatches `wheels.yaml` to build the wheels, then deletes the stale `draft-next` draft. Pushing those wheels to PyPI waits for an approval — see Step 4.
 
-**Important notes:**
+### Step 4 — Approve the PyPI upload
 
-- Use `release/vX.Y.Z` branch naming (the `auto-release` workflow keys on this prefix)
-- `auto-release` must dispatch `wheels.yaml` explicitly. It authenticates as `GITHUB_TOKEN`, and GitHub suppresses workflow triggers for events raised by that token, so neither the tag push nor the release publication reaches `wheels.yaml` on its own. `workflow_dispatch` is a documented exception to that rule
-- Anyone with write access can dispatch `wheels.yaml` and publish to PyPI. The dispatch input is resolved as `refs/tags/<tag>`, so only an existing tag can be built — but the `release` environment currently has **no required reviewers**, so there is no approval gate. Add reviewers to that environment if the release path needs one
+Once the wheels finish building, the `pypi-publish` job stops and waits for the `release` environment's reviewers, who are notified by GitHub. Approve it on the run's page in the Actions tab (**Review deployments** → tick `release` → **Approve and deploy**), or from the CLI:
+
+```bash
+# Find the waiting run. Dispatched runs all report headBranch `main`, so check the
+# run page (or its checkout log) to confirm which tag it built before approving.
+gh run list --workflow wheels.yaml --event workflow_dispatch --limit 5
+
+# Inspect the pending deployment; note the environment id in the output
+gh api "repos/CyberAgent/fontconfig-py/actions/runs/<run-id>/pending_deployments" \
+  --jq '.[] | {environment: .environment.name, id: .environment.id, wait: .wait_timer}'
+
+# Approve it
+gh api --method POST "repos/CyberAgent/fontconfig-py/actions/runs/<run-id>/pending_deployments" \
+  -f state=approved -f comment="Release vX.Y.Z" -F "environment_ids[]=<environment-id>"
+```
+
+A pending deployment expires after 30 days and the run then fails. Nothing has reached PyPI at that point, so recovery is just re-dispatching the tag as described below — which queues a fresh deployment needing approval in the same way.
+
+Verify the result once the job completes:
+
+```bash
+pip index versions fontconfig-py
+```
 
 ### Publishing a tag manually
 
@@ -363,3 +383,12 @@ gh workflow run wheels.yaml --ref main --field tag=vX.Y.Z
 ```
 
 `--ref` selects the workflow definition to run (keep it on `main`) and `tag` selects the commit to build, resolved as `refs/tags/<tag>`. Because the two are independent, this also works for tags created before `wheels.yaml` gained its `workflow_dispatch` trigger.
+
+The dispatched run stops at the same `release` approval gate as an automated release, so finish it with Step 4.
+
+### Important notes
+
+- Use `release/vX.Y.Z` branch naming (the `auto-release` workflow keys on this prefix)
+- `auto-release` must dispatch `wheels.yaml` explicitly. It authenticates as `GITHUB_TOKEN`, and GitHub suppresses workflow triggers for events raised by that token, so neither the tag push nor the release publication reaches `wheels.yaml` on its own. `workflow_dispatch` is a documented exception to that rule
+- Anyone with write access can dispatch `wheels.yaml`, but `pypi-publish` runs in the `release` environment and needs approval from the `fontconfig-py-maintainer` team. The dispatch input resolves to `refs/tags/<tag>`, so only an existing tag can be built
+- That gate is a pause before an **irreversible** PyPI upload, not separation of duties: it permits self-approval, and admins can bypass it (GitHub's default). With a single maintainer, requiring a second approver would make every release unapprovable — don't enable `prevent_self_review`

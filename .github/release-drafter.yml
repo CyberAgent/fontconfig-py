@@ -15,6 +15,7 @@ categories:
     labels: ['infrastructure', 'dependencies']
   - title: '### Technical'
     labels: ['technical']
+category-template: '$TITLE'
 exclude-labels: ['skip-changelog']
 change-template: '- $TITLE (#$NUMBER)'
 change-title-escapes: '\<*_&'

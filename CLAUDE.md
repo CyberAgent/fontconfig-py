@@ -346,10 +346,20 @@ The script validates preconditions (clean tree, `draft-next` draft exists, no ex
 - Get code review approval
 - Merge to `main` — **NEVER commit directly to main**
 
-Everything after the merge is automatic: the `auto-release` workflow (`.github/workflows/auto-release.yaml`) creates the git tag and GitHub Release from `CHANGELOG.md`, then deletes the stale `draft-next` draft. This triggers `wheels.yaml` to build wheels and publish to PyPI.
+Everything after the merge is automatic: the `auto-release` workflow (`.github/workflows/auto-release.yaml`) creates the git tag and GitHub Release from `CHANGELOG.md`, dispatches `wheels.yaml` to build the wheels and publish them to PyPI, then deletes the stale `draft-next` draft.
 
 **Important notes:**
 
 - Use `release/vX.Y.Z` branch naming (the `auto-release` workflow keys on this prefix)
-- Just pushing a tag does NOT trigger PyPI upload — a GitHub Release must be published
-- The `release` environment in GitHub Actions may require manual approval before PyPI upload
+- `auto-release` must dispatch `wheels.yaml` explicitly. It authenticates as `GITHUB_TOKEN`, and GitHub suppresses workflow triggers for events raised by that token, so neither the tag push nor the release publication reaches `wheels.yaml` on its own. `workflow_dispatch` is a documented exception to that rule
+- Anyone with write access can dispatch `wheels.yaml` and publish to PyPI. The dispatch input is resolved as `refs/tags/<tag>`, so only an existing tag can be built — but the `release` environment currently has **no required reviewers**, so there is no approval gate. Add reviewers to that environment if the release path needs one
+
+### Publishing a tag manually
+
+If a tag exists but its wheels were never uploaded, dispatch the build directly:
+
+```bash
+gh workflow run wheels.yaml --ref main --field tag=vX.Y.Z
+```
+
+`--ref` selects the workflow definition to run (keep it on `main`) and `tag` selects the commit to build, resolved as `refs/tags/<tag>`. Because the two are independent, this also works for tags created before `wheels.yaml` gained its `workflow_dispatch` trigger.

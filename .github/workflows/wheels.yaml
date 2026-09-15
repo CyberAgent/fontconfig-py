@@ -45,7 +45,7 @@ jobs:
           ref: ${{ github.event.inputs.tag && format('refs/tags/{0}', github.event.inputs.tag) || '' }}
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.2.0
+        uses: pypa/cibuildwheel@v4.2.1
         env:
           # Build abi3 wheels using Limited API (auto-detected from setup.py)
           # Skip free-threaded Python (cp*t-*) - Limited API not yet supported
